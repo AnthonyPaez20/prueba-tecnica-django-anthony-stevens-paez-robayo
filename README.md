@@ -193,7 +193,9 @@ Priorizaría la atención según el impacto del incidente, informaría al respon
 
 Informaría inmediatamente al equipo, evaluaría revertir el cambio si es la alternativa segura y evitaría modificar producción directamente sin revisión. Después verificaría la solución en un entorno controlado antes de volver a desplegarla.
 
-## Pendientes
+## Estado de la entrega
 
-* Publicación del repositorio en GitHub.
-* Verificación final del repositorio y entrega del enlace.
+Proyecto funcional, documentado y publicado en GitHub.
+
+Repositorio:
+https://github.com/AnthonyPaez20/prueba-tecnica-django-anthony-stevens-paez-robayo

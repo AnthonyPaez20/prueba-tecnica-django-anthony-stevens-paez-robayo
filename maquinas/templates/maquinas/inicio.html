@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de máquinas - Colfrance</title>
+</head>
+<body>
+
+    <h1>Gestión de máquinas</h1>
+
+    <p>
+        Usuario: <strong>{{ user.username }}</strong>
+    </p>
+
+    <p>
+        Rol:
+        {% if es_operario %}
+            Operario
+        {% elif es_supervisor %}
+            Supervisor
+        {% elif es_jefe %}
+            Jefe
+        {% endif %}
+    </p>
+
+    <a href="{% url 'logout' %}">Cerrar sesión</a>
+
+    <hr>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p><strong>{{ message }}</strong></p>
+        {% endfor %}
+    {% endif %}
+
+
+    <!-- ============================= -->
+    <!-- OPERARIO -->
+    <!-- ============================= -->
+
+    {% if es_operario %}
+
+        <h2>Registrar alerta</h2>
+
+        <form method="post" action="{% url 'crear_alerta' %}">
+            {% csrf_token %}
+
+            <label>Máquina:</label>
+            <input type="text" name="maquina" required>
+
+            <br><br>
+
+            <label>Descripción:</label>
+            <textarea name="descripcion" required></textarea>
+
+            <br><br>
+
+            <button type="submit">
+                Registrar alerta
+            </button>
+        </form>
+
+    {% endif %}
+
+
+    <!-- ============================= -->
+    <!-- SUPERVISOR -->
+    <!-- ============================= -->
+
+    {% if es_supervisor %}
+
+        <h2>Registrar parada</h2>
+
+        <form method="post" action="{% url 'crear_parada' %}">
+            {% csrf_token %}
+
+            <label>Máquina:</label>
+            <input type="text" name="maquina" required>
+
+            <br><br>
+
+            <label>Fecha:</label>
+            <input type="date" name="fecha" required>
+
+            <br><br>
+
+            <label>Hora inicio:</label>
+            <input type="time" name="hora_inicio" required>
+
+            <br><br>
+
+            <label>Hora finalización:</label>
+            <input type="time" name="hora_finalizacion" required>
+
+            <br><br>
+
+            <label>Motivo:</label>
+            <textarea name="motivo" required></textarea>
+
+            <br><br>
+
+            <button type="submit">
+                Registrar parada
+            </button>
+        </form>
+
+    {% endif %}
+
+
+    <hr>
+
+
+    <!-- ============================= -->
+    <!-- ALERTAS -->
+    <!-- ============================= -->
+
+    <h2>Alertas</h2>
+
+    {% if alertas %}
+
+        <table border="1" cellpadding="5">
+            <thead>
+                <tr>
+                    <th>Máquina</th>
+                    <th>Descripción</th>
+                    <th>Usuario</th>
+                    <th>Fecha</th>
+
+                    {% if es_supervisor %}
+                        <th>Acción</th>
+                    {% endif %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for alerta in alertas %}
+                    <tr>
+                        <td>{{ alerta.maquina }}</td>
+                        <td>{{ alerta.descripcion }}</td>
+                        <td>{{ alerta.usuario.username }}</td>
+                        <td>{{ alerta.fecha|date:"d/m/Y H:i" }}</td>
+
+                        {% if es_supervisor %}
+                            <td>
+                                <a href="{% url 'editar_alerta' alerta.id %}">
+                                    Editar
+                                </a>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+
+        <p>No hay alertas registradas.</p>
+
+    {% endif %}
+
+
+    <!-- ============================= -->
+    <!-- PARADAS -->
+    <!-- ============================= -->
+
+    {% if es_supervisor or es_jefe %}
+
+        <h2>Paradas</h2>
+
+        {% if paradas %}
+
+            <table border="1" cellpadding="5">
+
+                <thead>
+                    <tr>
+                        <th>Máquina</th>
+                        <th>Fecha</th>
+                        <th>Inicio</th>
+                        <th>Finalización</th>
+                        <th>Duración (minutos)</th>
+                        <th>Motivo</th>
+                        <th>Usuario</th>
+                        <th>Estado</th>
+
+                        {% if es_jefe %}
+                            <th>Acción</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for parada in paradas %}
+
+                        <tr>
+
+                            <td>{{ parada.maquina }}</td>
+
+                            <td>
+                                {{ parada.fecha|date:"d/m/Y" }}
+                            </td>
+
+                            <td>
+                                {{ parada.hora_inicio|time:"H:i" }}
+                            </td>
+
+                            <td>
+                                {{ parada.hora_finalizacion|time:"H:i" }}
+                            </td>
+
+                            <td>
+                                {{ parada.duracion_minutos }}
+                            </td>
+
+                            <td>
+                                {{ parada.motivo }}
+                            </td>
+
+                            <td>
+                                {{ parada.usuario.username }}
+                            </td>
+
+                            <td>
+                                {% if parada.cancelada %}
+                                    Cancelada
+                                {% else %}
+                                    Activa
+                                {% endif %}
+                            </td>
+
+                            {% if es_jefe %}
+
+                                <td>
+
+                                    {% if not parada.cancelada %}
+
+                                        <form method="post"
+                                              action="{% url 'cancelar_parada' parada.id %}">
+
+                                            {% csrf_token %}
+
+                                            <input
+                                                type="text"
+                                                name="motivo_cancelacion"
+                                                placeholder="Motivo"
+                                                required
+                                            >
+
+                                            <button type="submit">
+                                                Cancelar
+                                            </button>
+
+                                        </form>
+
+                                    {% else %}
+
+                                        Ya cancelada
+
+                                    {% endif %}
+
+                                </td>
+
+                            {% endif %}
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        {% else %}
+
+            <p>No hay paradas registradas.</p>
+
+        {% endif %}
+
+    {% endif %}
+
+</body>
+</html>
